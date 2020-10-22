@@ -55,3 +55,23 @@ export type TemplateMap = {
   activeSheetIndex?: number
   tabStripRatio?: number
 }
+
+export type Tag = {
+  backFormula: string
+  attribute: {
+    SB: string
+    FK: string
+    SWCSH: string
+  }
+  frontFormula: string | null
+}
+
+export const getCellSb = (cell: Cell): string | undefined => {
+  if (cell.tag) {
+    const tag = JSON.parse(cell.tag)
+    if ('attribute' in tag) {
+      return JSON.parse(tag.attribute).SB
+    }
+  }
+  return undefined
+}

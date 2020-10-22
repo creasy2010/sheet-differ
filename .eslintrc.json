@@ -12,6 +12,9 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "prefer-const": "warn",
+    "no-unused-vars": "warn",
+    "no-empty": "warn",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off"
   }
