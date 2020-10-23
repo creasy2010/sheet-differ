@@ -1,3 +1,5 @@
+import { Cell, DataTable } from './octo'
+
 export type DiffKey = string | number | symbol | null | bigint
 export type Change =
   | {
@@ -129,3 +131,56 @@ export const hashify = (str?: string | number) =>
           return a & a
         }, 0)
       )
+
+export const isCellEqual = (cellA: Cell, cellB: Cell): boolean => {
+  const sbA = getCellSb(cellA)
+  const sbB = getCellSb(cellB)
+  if (sbA === sbB) {
+    return true
+  }
+
+  if (cellA.value === cellB.value) {
+    if (cellA.formula !== cellB.formula) {
+      return false
+    }
+    return true
+  }
+
+  return false
+}
+
+export const getCellSb = (cell: Cell): string | undefined => {
+  if (cell.tag) {
+    const tag = JSON.parse(cell.tag)
+    if ('attribute' in tag) {
+      return JSON.parse(tag.attribute).SB
+    }
+  }
+  return undefined
+}
+
+export const Data2Array = (
+  dataTable: DataTable,
+  direction: 'row' | 'column' = 'row'
+): { cells: unknown[][] } => {
+  const entries = Object.entries(dataTable)
+
+  const res: unknown[][] = new Array(entries.length)
+    .fill(undefined)
+    .map(() => [])
+  // console.log(entries)
+  entries.forEach(([rowIndex, row]) => {
+    // console.log(row)
+    for (const columnIndex in row) {
+      if (direction === 'row') {
+        res[+rowIndex][+columnIndex] = String(
+          row[columnIndex].value ?? row[columnIndex].formula ?? ''
+        )
+      } else {
+        res[+columnIndex][+rowIndex] = row[columnIndex]
+      }
+    }
+  })
+  return { cells: res }
+}
+

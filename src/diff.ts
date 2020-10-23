@@ -1,4 +1,5 @@
-import { Cell, getCellSb } from './octo'
+import { Cell } from './octo'
+import { getCellSb } from './utils'
 
 export type RowState = 'modify' | 'insert' | 'remove'
 

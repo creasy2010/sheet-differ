@@ -1,14 +1,15 @@
 import { newData, oldData } from './data'
-import { diffSheetRows, Data2Array } from './index'
+import { Data2Array } from './utils'
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import daff from 'daff/lib/core';
 // const daff = require('daff')
 
-console.log(diffSheetRows(
-  { data: { dataTable: oldData } },
-  { data: { dataTable: newData } }
-))
+// console.log(diffSheetRows(
+//   { data: { dataTable: oldData } },
+//   { data: { dataTable: newData } }
+// ))
 
 const data1 = Data2Array(oldData)
 const data2 = Data2Array(newData)
