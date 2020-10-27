@@ -5,7 +5,8 @@ export type Span = {
   rowCount: number
 }
 
-export type Cell = {
+
+export type CellDTO = {
   value?: string | number
   formula?: string
   style?: {
@@ -19,15 +20,20 @@ export type Cell = {
     foreColor?: string
     vAlign?: number
     font?: string
+    borderLeft?:{
+      color:string;
+      style:1
+    }
     [key: string]: unknown
   }
-  tag?: string
+  tag?: string;
   // cellId?: string
 }
 
+
 export type DataTable = {
   [key: string]: {
-    [key: string]: Cell
+    [key: string]: CellDTO
   }
 }
 
