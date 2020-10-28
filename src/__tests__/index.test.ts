@@ -1,8 +1,7 @@
-import { Cell } from '../src/octo'
-import {} from '../src/utils'
+import { CellDTO } from '../octo'
 
 describe('compare', () => {
-  const dataA: Cell = {
+  const dataA: CellDTO = {
     value: '',
     tag: ''
   }
