@@ -12,27 +12,15 @@ import Sheet from './sheet'
 export default class Cell {
   tagInfo?: TagInfo = undefined
 
-  /**
-   * 单元格的连接信息;
-   */
-  cellLink: {
-    top?: Cell
-    left?: Cell
-    right?: Cell
-    bottom?: Cell
-  } = {}
+  constructor(public cellData: CellDTO, public ownedSheet: Sheet) {}
 
-  ownedSheet: Sheet
+  get location(): { row: number; col: number } {
+    return this.ownedSheet.getCellLocation(this)
+  }
 
-  constructor(
-    public cellData: CellDTO,
-    public location?: {
-      col: number
-      row: number
-      width?: number
-      height?: number
-    }
-  ) {}
+  get cellLink() {
+    return this.ownedSheet.getCellLinks(this)
+  }
 
   get value() {
     return this.cellData.value

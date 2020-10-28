@@ -17,17 +17,22 @@ describe('sheet基本使用', () => {
     let sheet = new Sheet(oldData)
     expect(sheet).not.toBeNull()
   })
-  it('基本对比 ', async () => {
+  it('基本对比-添加行 ', async () => {
     //全部相等的;
-    let newData = addRow(basicData, { addIndex: 1 })
+    let newData1 = addRow(basicData, { addIndex: 1 })
+    let newData2 = addRow(newData, { addIndex: 3 })
     let oldSheet = new Sheet(basicData)
-    let newSheet = new Sheet(newData)
-    oldSheet.adapter(newSheet)
-
+    let new1Sheet = new Sheet(newData1)
+    oldSheet.adapter(new1Sheet)
     console.log('老sheet值::')
     oldSheet.print()
     console.log('新sheet值::')
-    newSheet.print()
+    new1Sheet.print()
+
+    let new2Sheet = new Sheet(newData2)
+    console.log('新sheet值::')
+    oldSheet.adapter(new2Sheet)
+    new2Sheet.print()
     //新增加一行
 
     //减少一行;

@@ -39,15 +39,7 @@ export default class Sheet {
           this.maxCol = col
         }
 
-        let cell = new Cell(sheetDto[rowIndex][columnIndex], {
-          row,
-          col,
-          width: 1,
-          height: 1
-        })
-        cell.ownedSheet = this
-
-        this.cells.push(cell)
+        let cell = new Cell(sheetDto[rowIndex][columnIndex], this)
         //行不存在,则补一行;
         if (!this.layout[row]) {
           if (this.layout.length == row) {
@@ -59,30 +51,34 @@ export default class Sheet {
         this.layout[row].push(cell)
       }
     }
-    //2. 关联相邻cell
-    for (
-      let rowIndex = 0, iLen = this.maxRow + 1;
-      rowIndex < iLen;
-      rowIndex++
-    ) {
-      for (
-        let colIndex = 0, jLen = this.maxCol + 1;
-        colIndex < jLen;
-        colIndex++
-      ) {
-        this.layout[rowIndex][colIndex].cellLink = {
-          left: this.getCel(rowIndex - 1, colIndex),
-          top: this.getCel(rowIndex, colIndex - 1),
-          bottom: this.getCel(rowIndex + 1, colIndex),
-          right: this.getCel(rowIndex, colIndex + 1)
-        }
-      }
-    }
+    this.computersCells()
   }
 
-  getCel(row: number, col: number) {
+  private computersCells() {
+    let result = []
+    for (
+      let rowIndex = 0, rowIndexLen = this.layout.length;
+      rowIndex < rowIndexLen;
+      rowIndex++
+    ) {
+      let rowItem = this.layout[rowIndex]
+      for (
+        let colIndex = 0, colIndexLen = rowItem.length;
+        colIndex < colIndexLen;
+        colIndex++
+      ) {
+        result.push(this.getCel(rowIndex, colIndex))
+      }
+    }
+    this.cells = result
+    this.maxRow = this.layout.length
+    this.maxCol = this.layout[0].length
+  }
+
+  getCel(row: number, col: number): Cell | undefined {
     if (row < 0 || col < 0) {
       return
+      // throw new Error('索引值异常' + row + col)
     }
 
     if (this.layout[row] && this.layout[row][col]) {
@@ -132,20 +128,23 @@ export default class Sheet {
       toAddedRowIndex = []
     for (let i = 0, iLen = rowSortedComp.length; i < iLen; i++) {
       let { from, to } = rowSortedComp[i]
-      let fromIndex = from.location.row + fromAddedRowIndex.length
-      let toIndex = to.location.row + toAddedRowIndex.length
-
-      if (fromIndex < toIndex) {
-        if (!fromAddedRowIndex.includes(fromIndex)) {
-          fromAddedRowIndex.push(fromIndex)
+      if (from.location.row < to.location.row) {
+        if (!fromAddedRowIndex.includes(from.location.row)) {
+          fromAddedRowIndex.push(from.location.row)
           //from少行补
-          this.addBlankRow(fromIndex - 1, toIndex - fromIndex)
+          this.addBlankRow(
+            from.location.row,
+            to.location.row - from.location.row
+          )
         }
-      } else if (fromIndex > toIndex) {
-        if (!toAddedRowIndex.includes(toIndex)) {
-          toAddedRowIndex.push(toIndex)
+      } else if (from.location.row > to.location.row) {
+        if (!toAddedRowIndex.includes(to.location.row)) {
+          toAddedRowIndex.push(to.location.row)
           // to少行.
-          toSheet.addBlankRow(toIndex - 1, fromIndex - toIndex)
+          toSheet.addBlankRow(
+            to.location.row,
+            from.location.row - to.location.row
+          )
         }
       }
     }
@@ -159,21 +158,23 @@ export default class Sheet {
       toAddedColIndex = []
     for (let i = 0, iLen = colSortedComp.length; i < iLen; i++) {
       let { from, to } = colSortedComp[i]
-
-      let fromIndex = from.location.col + fromAddedColIndex.length
-      let toIndex = to.location.col + toAddedColIndex.length
-
-      if (fromIndex < toIndex) {
-        if (!fromAddedColIndex.includes(fromIndex)) {
-          fromAddedColIndex.push(fromIndex)
+      if (from.location.col < to.location.col) {
+        if (!fromAddedColIndex.includes(from.location.col)) {
+          fromAddedColIndex.push(from.location.col)
           //from少行补
-          this.addBlankCol(fromIndex - 1, toIndex - fromIndex)
+          this.addBlankCol(
+            from.location.col,
+            to.location.col - from.location.col
+          )
         }
-      } else if (fromIndex > toIndex) {
-        if (!toAddedColIndex.includes(toIndex)) {
-          toAddedColIndex.push(toIndex)
+      } else if (from.location.col > to.location.col) {
+        if (!toAddedColIndex.includes(to.location.col)) {
+          toAddedColIndex.push(to.location.col)
           // to少行.
-          toSheet.addBlankCol(toIndex - 1, fromIndex - toIndex)
+          toSheet.addBlankCol(
+            to.location.col,
+            from.location.col - to.location.col
+          )
         }
       }
     }
@@ -189,44 +190,15 @@ export default class Sheet {
       addColIndex = addColIndex + colCountSum
 
       for (let rowIndex = 0, iLen = this.maxRow; rowIndex < iLen; rowIndex++) {
-        let colBlancCell = new BlankCell(
-          {},
-          {
-            col: rowIndex,
-            row: addColIndex
-          }
-        )
+        let colBlancCell = new BlankCell({}, this)
         //添加blank列数据;
         this.layout[rowIndex].splice(addColIndex, 0, colBlancCell)
       }
-
-      //重新关联节点;
-      for (let rowIndex = 0, iLen = this.maxRow; rowIndex < iLen; rowIndex++) {
-        let colBlancCell = this.getCel(rowIndex, addColIndex)
-
-        colBlancCell.cellLink = {
-          top: this.getCel(rowIndex - 1, addColIndex),
-          bottom: this.getCel(rowIndex + 1, addColIndex),
-          left: this.getCel(rowIndex, addColIndex - 1),
-          right: this.getCel(rowIndex, addColIndex + 1)
-        }
-
-        if (this.layout[rowIndex][addColIndex - 1]) {
-          this.layout[rowIndex][addColIndex - 1].cellLink.right = this.layout[
-            rowIndex
-          ][addColIndex]
-        }
-        if (this.layout[rowIndex][addColIndex + 1]) {
-          this.layout[rowIndex][addColIndex + 1].cellLink.left = this.layout[
-            rowIndex
-          ][addColIndex]
-        }
-      }
     }
+    this.computersCells()
   }
 
   public addBlankRow(addIndex: number, rowCount: number = 1) {
-    // this.maxCol
     //添加一行新的;
 
     for (
@@ -238,39 +210,53 @@ export default class Sheet {
 
       let blankRow = []
       for (let colIndex = 0, iLen = this.maxCol; colIndex < iLen; colIndex++) {
-        let colBlancCell = new BlankCell(
-          {},
-          {
-            col: colIndex,
-            row: addIndex
-          }
-        )
+        let colBlancCell = new BlankCell({}, this)
         blankRow.push(colBlancCell)
       }
       this.layout.splice(addIndex, 0, blankRow)
+    }
+    this.computersCells()
+  }
 
-      //重新关联节点;
-      for (let colIndex = 0, iLen = this.maxCol; colIndex < iLen; colIndex++) {
-        let colBlancCell = this.getCel(addIndex, colIndex)
-
-        colBlancCell.cellLink = {
-          top: this.getCel(addIndex - 1, colIndex),
-          bottom: this.getCel(addIndex + 1, colIndex),
-          left: this.getCel(addIndex, colIndex - 1),
-          right: this.getCel(addIndex, colIndex + 1)
-        }
-
-        if (this.layout[addIndex - 1]) {
-          this.layout[addIndex - 1][colIndex].cellLink.bottom = this.layout[
-            addIndex
-          ][colIndex]
-        }
-        if (this.layout[addIndex + 1]) {
-          this.layout[addIndex + 1][colIndex].cellLink.top = this.layout[
-            addIndex
-          ][colIndex]
-        }
+  public getCellLinks(
+    cell: Cell
+  ): {
+    top: Cell
+    bottom: Cell
+    left: Cell
+    right: Cell
+  } {
+    let index = this.cells.indexOf(cell)
+    if (index >= 0) {
+      return {
+        top: this.cells[index - this.maxCol],
+        bottom: this.cells[index + this.maxCol],
+        left: this.cells[index - 1],
+        right: this.cells[index + 1]
       }
+    } else {
+      throw new Error(`sheet不包含 cell`)
+    }
+  }
+
+  public getCellLocation(
+    cell: Cell
+  ): {
+    row: number
+    col: number
+  } {
+    let index = this.cells.indexOf(cell)
+
+    if (index >= 0) {
+      let row = Math.floor(index / this.maxCol)
+      let col = index % this.maxCol
+
+      return {
+        row,
+        col
+      }
+    } else {
+      throw new Error(`sheet不包含 cell`)
     }
   }
 
