@@ -6,14 +6,19 @@
  * @coder.yang2010@gmail.com
  * @Date    2020/10/27
  **/
-import {CellDTO} from '../octo'
+import { CellDTO } from '../octo'
 
 export default class Cell {
   tagInfo?: TagInfo = undefined
 
   constructor(
     public cellData: CellDTO,
-    public location?: {x: number; y: number; width: number; height: number},
+    public location?: {
+      col: number
+      row: number
+      width: number
+      height: number
+    }
   ) {}
 
   get tag(): TagInfo | undefined {
@@ -40,9 +45,7 @@ export default class Cell {
    *
    * @param toCell
    */
-  isEqual(toCell: Cell) {
-
-  }
+  isEqual(toCell: Cell) {}
 }
 
 interface TagInfo {
