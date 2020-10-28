@@ -7,7 +7,7 @@
  * @Date    2020/10/27
  **/
 
-import { oldData } from '../../data'
+import { oldData, newData } from '../../data'
 import Sheet from '../sheet'
 
 describe('sheet基本使用', () => {
@@ -15,5 +15,14 @@ describe('sheet基本使用', () => {
     let sheet = new Sheet(oldData)
     expect(sheet).not.toBeNull()
   })
-  it('基本对比 ', async () => {})
+  it('基本对比 ', async () => {
+    //全部相等的;
+    let oldSheet = new Sheet(oldData)
+    let newSheet = new Sheet(newData)
+    oldSheet.diff(oldSheet)
+
+    //新增加一行
+
+    //减少一行;
+  })
 })

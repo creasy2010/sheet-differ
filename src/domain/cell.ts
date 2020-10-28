@@ -7,9 +7,22 @@
  * @Date    2020/10/27
  **/
 import { CellDTO } from '../octo'
+import Sheet from './sheet'
 
 export default class Cell {
   tagInfo?: TagInfo = undefined
+
+  /**
+   * 单元格的连接信息;
+   */
+  cellLink: {
+    top?: Cell
+    left?: Cell
+    right?: Cell
+    bottom?: Cell
+  } = {}
+
+  ownedSheet: Sheet
 
   constructor(
     public cellData: CellDTO,
@@ -27,6 +40,9 @@ export default class Cell {
     }
     if (!this.tagInfo) {
       this.tagInfo = JSON.parse(this.cellData.tag)
+      if (typeof this.tagInfo.attribute === 'string') {
+        this.tagInfo.attribute = JSON.parse(this.tagInfo.attribute)
+      }
     }
     return this.tagInfo
   }
@@ -35,8 +51,10 @@ export default class Cell {
    * 是否是计算单元格;
    */
   get isFormulaCell(): boolean {
+    return !!(this.tag && this.tag.attribute && this.tag.attribute.SB)
+    // TODO dong 2020/10/28 ts配置要处理下.
     // return !!this.tag?.attribute?.SB
-    return false
+    // return false
   }
 
   /**
