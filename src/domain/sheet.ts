@@ -25,20 +25,22 @@ export default class Sheet {
         let col = parseInt(columnIndex)
         let row = parseInt(rowIndex)
         let cell = new Cell(sheetDto[rowIndex][columnIndex], {
-          col,
           row,
+          col,
           width: 1,
           height: 1
         })
 
         this.cells.push(cell)
+        //行不存在,则补一行;
         if (!this.layout[row]) {
-          if (this.layout.length == row - 1) {
-            this.layout[row].push()
+          if (this.layout.length == row) {
+            this.layout[row] = []
           } else {
             throw new Error('index 不连续::')
           }
         }
+        this.layout[row].push(cell)
       }
     }
   }

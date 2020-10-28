@@ -35,7 +35,8 @@ export default class Cell {
    * 是否是计算单元格;
    */
   get isFormulaCell(): boolean {
-    return !!this.tag?.attribute?.SB
+    // return !!this.tag?.attribute?.SB
+    return false
   }
 
   /**
