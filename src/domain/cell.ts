@@ -29,10 +29,14 @@ export default class Cell {
     public location?: {
       col: number
       row: number
-      width: number
-      height: number
+      width?: number
+      height?: number
     }
   ) {}
+
+  get value() {
+    return this.cellData.value
+  }
 
   get tag(): TagInfo | undefined {
     if (!this.cellData.tag) {
