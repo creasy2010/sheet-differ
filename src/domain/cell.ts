@@ -43,9 +43,9 @@ export default class Cell {
    * 是否是计算单元格;
    */
   get isFormulaCell(): boolean {
-    return !!(this.tag && this.tag.attribute && this.tag.attribute.SB)
+    // return !!(this.tag && this.tag.attribute && this.tag.attribute.SB)
     // TODO dong 2020/10/28 ts配置要处理下.
-    // return !!this.tag?.attribute?.SB
+    return !!this.tag?.attribute?.SB
     // return false
   }
 
