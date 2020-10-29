@@ -129,29 +129,52 @@ export default class Sheet {
     for (let i = 0, iLen = rowSortedComp.length; i < iLen; i++) {
       let { from, to } = rowSortedComp[i]
       if (from.location.row < to.location.row) {
+        //检测是否后面包的的都差不行. 如果不是不要添加; 整个页面是否都差一行;
         if (!fromAddedRowIndex.includes(from.location.row)) {
-          fromAddedRowIndex.push(from.location.row)
-          //from少行补
-          this.addBlankRow(
-            from.location.row,
-            to.location.row - from.location.row
-          )
+          if (
+            Sheet.isAddable({
+              toAddSheet: this,
+              toCompSheet: toSheet,
+              sheetDir: 'from',
+              addDirection: 'row',
+              addIndex: from.location.row,
+              sameCells: rowSortedComp
+            })
+          ) {
+            fromAddedRowIndex.push(from.location.row)
+            //from少行补
+            this.addBlankRow(
+              from.location.row,
+              to.location.row - from.location.row
+            )
+          }
         }
       } else if (from.location.row > to.location.row) {
         if (!toAddedRowIndex.includes(to.location.row)) {
-          toAddedRowIndex.push(to.location.row)
-          // to少行.
-          toSheet.addBlankRow(
-            to.location.row,
-            from.location.row - to.location.row
-          )
+          if (
+            Sheet.isAddable({
+              toAddSheet: toSheet,
+              toCompSheet: this,
+              sheetDir: 'to',
+              addDirection: 'row',
+              addIndex: to.location.row,
+              sameCells: rowSortedComp
+            })
+          ) {
+            toAddedRowIndex.push(to.location.row)
+            // to少行.
+            toSheet.addBlankRow(
+              to.location.row,
+              from.location.row - to.location.row
+            )
+          }
         }
       }
     }
 
     //3.2 添加blankCell 补行, 或列;
     let colSortedComp = rowSortedComp.sort((a, b) => {
-      return b.from.location.col - a.from.location.col
+      return a.from.location.col - b.from.location.col
     })
 
     let fromAddedColIndex = [],
@@ -160,24 +183,92 @@ export default class Sheet {
       let { from, to } = colSortedComp[i]
       if (from.location.col < to.location.col) {
         if (!fromAddedColIndex.includes(from.location.col)) {
-          fromAddedColIndex.push(from.location.col)
-          //from少行补
-          this.addBlankCol(
-            from.location.col,
-            to.location.col - from.location.col
-          )
+          if (
+            Sheet.isAddable({
+              toAddSheet: this,
+              toCompSheet: toSheet,
+              sheetDir: 'from',
+              addDirection: 'col',
+              addIndex: from.location.col,
+              sameCells: colSortedComp
+            })
+          ) {
+            fromAddedColIndex.push(from.location.col)
+            //from少行补
+            this.addBlankCol(
+              from.location.col,
+              to.location.col - from.location.col
+            )
+          }
         }
       } else if (from.location.col > to.location.col) {
         if (!toAddedColIndex.includes(to.location.col)) {
-          toAddedColIndex.push(to.location.col)
-          // to少行.
-          toSheet.addBlankCol(
-            to.location.col,
-            from.location.col - to.location.col
-          )
+          if (
+            Sheet.isAddable({
+              toAddSheet: toSheet,
+              toCompSheet: this,
+              sheetDir: 'to',
+              addDirection: 'col',
+              addIndex: to.location.col,
+              sameCells: colSortedComp
+            })
+          ) {
+            toAddedColIndex.push(to.location.col)
+            // to少行.
+            toSheet.addBlankCol(
+              to.location.col,
+              from.location.col - to.location.col
+            )
+          }
         }
       }
     }
+  }
+
+  /**
+   * 是否可以添加一行;
+   * 检测整个表格是否差N行,
+   * 检测,后面的关键点是否也差N行
+   */
+  public static isAddable({
+    toAddSheet,
+    toCompSheet,
+    sheetDir,
+    addDirection,
+    addIndex,
+    sameCells
+  }: {
+    toAddSheet: Sheet
+    toCompSheet: Sheet
+    sheetDir: 'from' | 'to'
+    addDirection: 'row' | 'col'
+    addIndex: number
+    sameCells: { from: Cell; to: Cell }[]
+  }) {
+    //比整个sheet是否大, 如果整个sheet都不大, 那就不需要添加了;
+    let maxType = 'max' + addDirection[0].toUpperCase() + addDirection.substr(1)
+    if (toAddSheet[maxType] >= toCompSheet[maxType]) {
+      return false
+    }
+
+    let leftCellComps = sameCells.filter(
+      (item) => item[sheetDir].location[addDirection] > addIndex
+    )
+
+    for (let i = 0, iLen = leftCellComps.length; i < iLen; i++) {
+      let compItem = leftCellComps[i]
+      if (
+        !(
+          Math.abs(
+            compItem.from.location[addDirection] -
+              compItem.to.location[addDirection]
+          ) > 0
+        )
+      ) {
+        return false
+      }
+    }
+    return true
   }
 
   public addBlankCol(addColIndex: number, colCount: number = 1) {
@@ -323,7 +414,7 @@ export default class Sheet {
     } while (true)
   }
 
-  print() {
+  toString() {
     let fina = []
     for (
       let rowIndex = 0, rowIndexLen = this.layout.length;
@@ -341,9 +432,13 @@ export default class Sheet {
         let rowItemElement = rowItem[colIndex]
         result.push(getCellInfo(this.getCel(rowIndex, colIndex)))
       }
-      fina.push(result.join('\t'))
+      fina.push(result.join('\t\t'))
     }
-    console.log(fina.join('\n'))
+    return fina.join('\n')
+  }
+
+  print() {
+    console.log(this.toString())
   }
   /**
    * 获取相同属性的节点;

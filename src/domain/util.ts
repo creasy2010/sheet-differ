@@ -6,9 +6,32 @@
  * @coder.yang2010@gmail.com
  * @Date    2020/10/28
  **/
+export function addCol(
+  sheetDTO: any,
+  params: {
+    addIndex: number
+    getColumn?: () => any
+    colCount?: number
+  }
+) {
+  params = { addIndex: 0, colCount: 1, ...params }
 
-import Sheet from './sheet'
+  let copyData = JSON.parse(JSON.stringify(sheetDTO))
+  let rows = map2Array(copyData)
 
+  let result = []
+  for (let i = 0, iLen = rows.length; i < iLen; i++) {
+    let columns = map2Array(rows[i])
+    columns.splice(params.addIndex, 0, [
+      {
+        style: {},
+        value: ''
+      }
+    ])
+    result.push(array2Map(columns))
+  }
+  return array2Map(result)
+}
 /***
  * 为json数据添加一行;
  * @param SheetDTO
